@@ -6,7 +6,13 @@ import datetime
 import bcrypt
 from deta import Deta
 from st_audiorec import st_audiorec
-from fpdf import FPDF
+import pdfkit
+from jinja2 import Environment, PackageLoader, select_autoescape, FileSystemLoader
+from datetime import date
+
+# Specify the correct path to the wkhtmltopdf executable
+wkhtmltopdf_path = 'C:/Program Files/wkhtmltopdf/bin/wkhtmltopdf.exe'
+
 # Load environment variables
 load_dotenv()
 
@@ -299,21 +305,24 @@ if __name__ == "__main__":
                     legal_draft = get_legal_draft(query, legal_advice)
                     st.success("Legal Draft:")
                     st.write(legal_draft)
-                    pdf = FPDF()
-                    pdf.add_page()
-                    pdf.set_font("Arial", size = 15)
- 
-                    # create a cell
-                    pdf.cell(200, 10, txt = legal_draft, 
-                            ln = 1)
-                    pdf.output("draft.pdf") 
-                    with open("draft.pdf", "rb") as pdf_file:
-                        PDFbyte = pdf_file.read()
-
-                    st.download_button(label="Export_Report",
-                                        data=PDFbyte,
-                                        file_name="test.pdf",
-                                        mime='application/octet-stream')
+                    html_response = f"""
+                    <html>
+                    <body>
+                    <p>{legal_draft.replace('\n', '<br>')}
+                    </p>
+                    </body>
+                    </html>"""
+                    pdfkit_config = pdfkit.configuration(wkhtmltopdf=wkhtmltopdf_path)
+                    pdf = pdfkit.from_string(html_response, False, configuration=pdfkit_config)
+                    # Display success message and provide a download link for the generated PDF
+                    st.success("🎉 Your legal draft was generated!")
+                    st.download_button(
+                        "⬇️ Download PDF",
+                        data=pdf,
+                        file_name="legal_draft.pdf",
+                        mime="application/octet-stream",
+    )
+                   
  
 
                     
