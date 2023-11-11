@@ -1,6 +1,6 @@
-import streamlit as st
 import openai
 import os
+import streamlit as st
 from dotenv import load_dotenv
 import datetime
 import bcrypt
@@ -10,12 +10,30 @@ from deta import Deta
 load_dotenv()
 
 # Set up OpenAI API key
-openai.api_key = os.getenv('OPENAI_API_KEY')
+client = openai.OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
 
 # Set up Deta
 DETA_KEY = os.getenv('DETA_KEY')
 deta = Deta(DETA_KEY)
 db = deta.Base('StreamlitAuth')
+
+# Chat-based language model system messages
+system_messages = f"""Act as an AI Legal Advisor. Do not mention you are not an actual lawyer. 
+Give legal advises based on the constitution of India in the following steps.
+
+1: Check whether the issue is an actual legal issue.
+2: Give legal advise
+3: Explain the steps for how to and where to register complaint as a list.
+4: Cite the necessary articles and sections under law with brief explainations about each with contect to the problem.
+
+
+Provide response in the  following format
+Legal advise :<step 2 reasoning>
+
+Steps for registering complaint: <step 3 reasoning>
+
+Citations <step 4 reasoning>
+"""
 
 # Function to hash the password
 def hash_password(password):
@@ -65,30 +83,21 @@ def login():
             if user:
                 # Set the state variable to indicate successful login
                 st.session_state.is_authenticated = True
-                st.success(f"Welcome back, {user['username']}! Last login: {datetime.datetime.now()}")
+                st.success(f"Welcome back, {user['username']}!")
             else:
                 st.error("Authentication failed. Please check your username and password.")
 
 # Function to display the legal advice chatbot
-def legal_advice_chatbot():
-    st.header("AI Legal Advisor")
-    st.subheader("Ask for Legal Advice")
-
-    # User input for legal advice
-    user_prompt = st.text_area("Enter your legal query:")
-    
-    if st.button("Get Legal Advice"):
-        if user_prompt:
-            # Call OpenAI API for legal advice
-            completion = openai.Completion.create(
-                engine="text-davinci-003",
-                prompt=f"Act as an AI Legal Advisor. {user_prompt}",
-                max_tokens=200,
-                temperature=0.7,
-            )
-            st.success(f"Legal Advice: {completion.choices[0].text.strip()}")
-        else:
-            st.warning("Please enter a legal query.")
+def get_legal_advice(prompt):
+    # Call OpenAI API for legal advice
+    completion = client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {"role": "system", "content": system_messages},
+            {"role": "user", "content": prompt}
+        ]
+    )
+    return completion.choices[0].message.content
 
 # Function to display the dashboard
 def dashboard():
@@ -115,7 +124,15 @@ if __name__ == "__main__":
     elif selected_page == "Legal Advice":
         # Check if the user is authenticated
         if hasattr(st.session_state, 'is_authenticated') and st.session_state.is_authenticated:
-            legal_advice_chatbot()
+            user_prompt = st.text_area("Enter your legal query:")
+            if st.button("Get Legal Advice"):
+                if user_prompt:
+                    # Get legal advice from OpenAI
+                    legal_advice = get_legal_advice(user_prompt)
+                    st.success("Legal Advice:")
+                    st.write(legal_advice)
+                else:
+                    st.warning("Please enter a legal query.")
         else:
             st.warning("Please log in to access the legal advice chatbot.")
 
