@@ -257,9 +257,40 @@ def get_legal_draft(query, response):
     return completion.choices[0].message.content
 
 # Function to display the dashboard
+# Function to display the dashboard
 def dashboard():
     st.title("Just AI Dashboard")
     st.header("Welcome to the Dashboard!")
+
+    # Check if the user is authenticated
+    if hasattr(st.session_state, 'is_authenticated') and st.session_state.is_authenticated:
+        # Retrieve user information from Deta
+        user = db.get(st.session_state.username)
+        if user:
+            st.subheader("Legal Advice History:")
+            responses = user.get("responses", [])
+            for entry in responses:
+                st.write(f"Query: {entry['query']}")
+                st.write(f"Response: {entry['response']}")
+                st.write("----")
+
+        # Add other dashboard content here
+    else:
+        st.warning("Please log in to access the dashboard.")
+
+
+        # Add other dashboard content here
+    else:
+        st.warning("Please log in to access the dashboard.")
+This modification assumes that the user's responses are stored in the Deta database under the "responses" key. It retrieves the responses and displays them in the dashboard. You can further enhance the formatting and presentation based on your preferences.
+
+Remember to update the dashboard function in your Streamlit app to include this modification.
+
+
+
+
+
+
 
     # Add your dashboard content here
 
