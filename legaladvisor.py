@@ -13,12 +13,15 @@ from datetime import date
 from streamlit_option_menu import option_menu
 from streamlit_lottie import st_lottie
 import requests
+from PIL import Image
+image=Image.open('justailogo.png')
 
-wkhtmltopdf_path = '/usr/local/bin/wkhtmltopdf'
+st.set_page_config(page_title='JustAI', page_icon='justailogo.png')
+wkhtmltopdf_path = 'C:/Program Files/wkhtmltopdf/bin/wkhtmltopdf.exe'
 
 # Load environment variables
 load_dotenv()
-
+st.sidebar.image(image, width=275)
 # Set up OpenAI API key
 client = openai.OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
 
@@ -270,6 +273,7 @@ def get_legal_draft(query, response):
 if __name__ == "__main__":
     # Display the login or sign-up page based on the selected navigation
     
+    
     if choice == "Sign Up":
         sign_up()
 
@@ -384,7 +388,7 @@ if __name__ == "__main__":
                     else:
                         st.enter("Please enter a legal query")
             else:
-                    st.write("Please sign in")
+                    st.write("Please Login")
 
         elif selected_horizontal == 'Contact':
             st.header("Contact Us")
@@ -415,5 +419,7 @@ if __name__ == "__main__":
                     st.subheader(response["query"])
                     st.write(response["response"])
                     st.divider()
+            else:
+                st.write("Please Login.")
 
             
