@@ -50,10 +50,10 @@ if 'is_authenticated' not in st.session_state:
     st.session_state.is_authenticated = False
 
 # Set up OpenAI API key
-client = openai.OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+client = openai.OpenAI(api_key=st.secrets('OPENAI_API_KEY'))
 
 # Set up Deta
-DETA_KEY = os.getenv('DETA_KEY')
+DETA_KEY = st.secrets('DETA_KEY')
 deta = Deta(DETA_KEY)
 db = deta.Base('User-Database')
 
