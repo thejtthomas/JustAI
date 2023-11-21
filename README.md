@@ -19,25 +19,24 @@ Access on-demand legal consultation through an intuitive chat interface. Our pla
 
 Generate and review legal documents efficiently with our AI-driven document assistance feature. Ensure accuracy and compliance with relevant legal standards while streamlining the document creation process.
 
-### 3. AI-Driven Case Analysis
+## Additional Features
 
-Benefit from AI-driven case analysis for enhanced insights and recommendations tailored to specific legal situations. Our advanced algorithms analyze case details to provide users with a comprehensive understanding of their legal standing.
+- **Audio Recording:** Easily input your queries or details through audio recordings. Our platform supports audio inputs, allowing you to communicate in a way that suits you best.
 
-### 4. User Advocacy
+- **Multilingual Support:** Communicate with our platform in multiple languages. We understand the importance of accessibility, and our multilingual support ensures that language is not a barrier in seeking legal assistance.
 
-We advocate for users by providing information on legal rights, potential legal recourse, and strategies for navigating legal challenges. Our commitment is to empower users with the knowledge and tools they need to assert their rights effectively.
 
-## Project Structure
+## Deployment
 
-- **legaladvisor.py**: The core file of our project, containing the codebase for the legal assistance functionalities.
+Check out our webapp here
+
+[JUST AI](justai.streamlit.app)
+
+## Team members
+1. [Samyuktha Sudheer](https://github.com/samyukthacodes)
+2. [Riya Derose Michael](https://github.com/riyadm77)
+3. [Rose Mary P John](https://github.com/maryrosejohn)
+3. [Thej T Thomas](https://github.com/thejtthomas)
   
-## Getting Started
 
-To start exploring the capabilities of JUST AI Legal Assistance, follow these steps:
-
-1. Clone the repository.
-2. Run `legaladvisor.py` to initiate the legal assistance platform.
-3. Follow the prompts and explore the various services offered by our AI-driven system.
-
-Feel free to reach out to our team for any inquiries or assistance. We're excited to have you on board as we revolutionize legal support with artificial intelligence!
 
