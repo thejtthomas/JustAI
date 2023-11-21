@@ -6,10 +6,10 @@ import datetime
 import bcrypt
 from deta import Deta
 from st_audiorec import st_audiorec
-
 from jinja2 import Environment, PackageLoader, select_autoescape, FileSystemLoader
 from datetime import date
 from io import BytesIO
+
 from streamlit_option_menu import option_menu
 from streamlit_lottie import st_lottie
 import requests
@@ -18,19 +18,42 @@ from docx import Document
 from docx.shared import Pt
 from docx2pdf import convert
 
+
 image=Image.open('justailogo.png')
 
 st.set_page_config(page_title='JustAI', page_icon='justailogo.png')
+
+hide_streamlit_style = """
+<style>
+footer {
+    visibility: hidden;
+}
+
+footer:after {
+    content: 'Made by AIholics'; 
+    visibility: visible;
+    display: block;
+    position: relative;
+    padding: 5px; /* or any other valid value */
+    top: 2px;
+}
+</style>
+"""
+
+st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
 
 # Load environment variables
 load_dotenv()
 st.sidebar.image(image, width=275)
+if 'is_authenticated' not in st.session_state:
+    st.session_state.is_authenticated = False
+
 # Set up OpenAI API key
-client = openai.OpenAI(api_key = st.secrets['OPENAI_API_KEY'])
+client = openai.OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
 
 # Set up Deta
-DETA_KEY = st.secrets['DETA_KEY']
+DETA_KEY = os.getenv('DETA_KEY')
 deta = Deta(DETA_KEY)
 db = deta.Base('User-Database')
 
@@ -67,8 +90,9 @@ with st.sidebar:
 
 
 def login():
+    st.sidebar.subheader(':green[Log In]')
     with st.sidebar.form(key='login', clear_on_submit=True):
-        st.sidebar.subheader(':green[Log In]')
+        
         username = st.text_input(':blue[Username]', placeholder='Enter Your Username')
         password = st.text_input(':blue[Password]', placeholder='Enter Your Password', type='password')
 
@@ -96,6 +120,7 @@ def sign_up():
                 st.success(f"User {username} successfully created! Date joined: {result['date_joined']}")
             else:
                 st.sidebar.error("Passwords do not match. Please try again.")
+
 system_messages = f"""Act as an AI Legal Advisor. Do not mention you are not an actual lawyer. 
 Give legal advises based on the constitution of India in the following steps.
 
@@ -110,7 +135,7 @@ Legal advise :<step 2 reasoning>
 
 Steps for registering complaint: <step 3 reasoning>
 
-Citations <step 4 reasoning>
+Citations <step 4 reasoning>
 
 Following is an example for response suitable for a women seeking divorce from her abusive husband:
 
@@ -273,10 +298,10 @@ def get_legal_draft(query, response):
     )
     return completion.choices[0].message.content
 
-
 def generate_word_document(html_content):
     # Create a BytesIO object to store the Word document
     word_output = BytesIO()
+    
 
     # Create a new Word document
     doc = Document()
@@ -306,6 +331,12 @@ if __name__ == "__main__":
         if user:
            
             st.session_state["username"] = user['key']
+        if st.session_state.is_authenticated:
+            placeholder = st.sidebar.empty()
+            if placeholder.button("Logout"):
+                st.session_state.is_authenticated = False
+                placeholder.empty()
+
 
 # 2. Horizontal menu
         st.title("Just AI")
@@ -370,7 +401,7 @@ if __name__ == "__main__":
                             f.write(wav_audio_data)
 
                         audio_file= open("myfile.wav", "rb")
-                        transcript = client.audio.transcriptions.create(
+                        transcript = client.audio.translations.create(
                         model="whisper-1", 
                         file=audio_file
                         )
@@ -401,7 +432,7 @@ if __name__ == "__main__":
                             file_name="generated_document.docx",
                             key="word-doc-download"
                         )
-                          
+
                         
                     else:
                         st.enter("Please enter a legal query")
@@ -415,7 +446,7 @@ if __name__ == "__main__":
                 {"name": "Samyuktha Sudheer", "phone": "+123456789", "email": "samyusudheer@gmail.com"},
                 {"name": "Rose Mary P John", "phone": "+987654321", "email": "rosemarypjohn@gmail.com"},
                 {"name": "Riya Derose Micheal", "phone": "+111223344", "email": "riyaderose@gmail.com"},
-                {"name": "Thej T Thomas", "phone": "+555666777", "email": "thejtthomas@gmail.com"}
+                {"name": "Thej T Thomas", "phone": "+555666777", "email": "thejthomas@gmail.com"}
             ]
 
             phone_icon = "📞"
@@ -463,5 +494,3 @@ if __name__ == "__main__":
                     st.divider()
             else:
                 st.write("Please Login.")
-
-            
