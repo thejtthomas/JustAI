@@ -306,11 +306,6 @@ if __name__ == "__main__":
         if user:
            
             st.session_state["username"] = user['key']
-        if st.session_state.is_authenticated:
-            placeholder = st.sidebar.empty()
-            if placeholder.button("Logout"):
-                st.session_state.is_authenticated = False
-                placeholder.empty()
 
 # 2. Horizontal menu
         st.title("Just AI")

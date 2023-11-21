@@ -6,27 +6,28 @@ import datetime
 import bcrypt
 from deta import Deta
 from st_audiorec import st_audiorec
-import pdfkit
+
 from jinja2 import Environment, PackageLoader, select_autoescape, FileSystemLoader
 from datetime import date
-
+from io import BytesIO
 from streamlit_option_menu import option_menu
 from streamlit_lottie import st_lottie
 import requests
 from PIL import Image
+from docx import Document
+from docx.shared import Pt
+from docx2pdf import convert
+
 image=Image.open('justailogo.png')
 
 st.set_page_config(page_title='JustAI', page_icon='justailogo.png')
-wkhtmltopdf_path = '/usr/local/bin/wkhtmltopdf'
+
 
 # Load environment variables
 load_dotenv()
 st.sidebar.image(image, width=275)
-if 'is_authenticated' not in st.session_state:
-    st.session_state.is_authenticated = False
-
 # Set up OpenAI API key
-client = openai.OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+client = openai.OpenAI(api_key = os.getenv('OPENAI_API_KEY'))
 
 # Set up Deta
 DETA_KEY = os.getenv('DETA_KEY')
@@ -66,9 +67,8 @@ with st.sidebar:
 
 
 def login():
-    st.sidebar.subheader(':green[Log In]')
     with st.sidebar.form(key='login', clear_on_submit=True):
-        
+        st.sidebar.subheader(':green[Log In]')
         username = st.text_input(':blue[Username]', placeholder='Enter Your Username')
         password = st.text_input(':blue[Password]', placeholder='Enter Your Password', type='password')
 
@@ -110,7 +110,7 @@ Legal advise :<step 2 reasoning>
 
 Steps for registering complaint: <step 3 reasoning>
 
-Citations <step 4 reasoning>
+Citations <step 4 reasoning>
 
 Following is an example for response suitable for a women seeking divorce from her abusive husband:
 
@@ -274,6 +274,26 @@ def get_legal_draft(query, response):
     return completion.choices[0].message.content
 
 
+def generate_word_document(html_content):
+    # Create a BytesIO object to store the Word document
+    word_output = BytesIO()
+
+    # Create a new Word document
+    doc = Document()
+
+    # Add a heading
+    paragraphs = html_content.split('<br>')
+    for paragraph in paragraphs:
+        doc.add_paragraph(paragraph.strip())
+
+    # Save the Word document to the BytesIO object
+    doc.save(word_output)
+
+    # Seek to the beginning of the BytesIO stream
+    word_output.seek(0)
+
+    return word_output
+
 if __name__ == "__main__":
     # Display the login or sign-up page based on the selected navigation
     
@@ -286,12 +306,6 @@ if __name__ == "__main__":
         if user:
            
             st.session_state["username"] = user['key']
-        if st.session_state.is_authenticated:
-            placeholder = st.sidebar.empty()
-            if placeholder.button("Logout"):
-                st.session_state.is_authenticated = False
-                placeholder.empty()
-
 
 # 2. Horizontal menu
         st.title("Just AI")
@@ -356,7 +370,7 @@ if __name__ == "__main__":
                             f.write(wav_audio_data)
 
                         audio_file= open("myfile.wav", "rb")
-                        transcript = client.audio.translations.create(
+                        transcript = client.audio.transcriptions.create(
                         model="whisper-1", 
                         file=audio_file
                         )
@@ -376,24 +390,18 @@ if __name__ == "__main__":
                         #st.write(legal_advice)
                         #if st.button("Generate legal draft"):
                         legal_draft = get_legal_draft(query, legal_advice)
-                        html_response = f"""
-                        <html>
-                        <body>
-                        <p>{legal_draft.replace('\n', '<br>')}
-                        </p>
-                        </body>
-                        </html>"""
-                        pdfkit_config = pdfkit.configuration(wkhtmltopdf=wkhtmltopdf_path)
-                        pdf = pdfkit.from_string(html_response, False, configuration=pdfkit_config)
-                        # Display success message and provide a download link for the generated PDF
                         st.success("🎉 Your legal draft was generated!")
-                        st.download_button(
-                            "⬇️ Download PDF",
-                            data=pdf,
-                            file_name="legal_draft.pdf",
-                            mime="application/octet-stream",
-                        )
+                        
+                        word_output = generate_word_document(legal_draft)
 
+                        # Provide a download link for the Word document
+                        st.download_button(
+                            label="⬇️Download Legal Draft",
+                            data=word_output,
+                            file_name="generated_document.docx",
+                            key="word-doc-download"
+                        )
+                          
                         
                     else:
                         st.enter("Please enter a legal query")
@@ -409,6 +417,30 @@ if __name__ == "__main__":
                 {"name": "Riya Derose Micheal", "phone": "+111223344", "email": "riyaderose@gmail.com"},
                 {"name": "Thej T Thomas", "phone": "+555666777", "email": "thejtthomas@gmail.com"}
             ]
+
+            phone_icon = "📞"
+            mail_icon = "✉️"
+
+            for contact in contacts:
+                st.subheader(contact["name"])
+                st.write(f"{phone_icon} Phone: {contact['phone']}")
+                st.write(f"{mail_icon} Email: {contact['email']}")
+                st.write("---")
+
+        elif selected_horizontal == "History":
+            if hasattr(st.session_state, 'is_authenticated') and st.session_state.is_authenticated:
+                user = db.get(st.session_state.username)
+                responses = user["responses"]
+
+                for response in responses[::-1]:
+                    print(response)
+                    st.subheader(response["query"])
+                    st.write(response["response"])
+                    st.divider()
+            else:
+                st.write("Please Login.")
+
+            
 
             phone_icon = "📞"
             mail_icon = "✉️"
