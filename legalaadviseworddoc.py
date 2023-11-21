@@ -472,24 +472,3 @@ if __name__ == "__main__":
 
             
 
-            phone_icon = "📞"
-            mail_icon = "✉️"
-
-            for contact in contacts:
-                st.subheader(contact["name"])
-                st.write(f"{phone_icon} Phone: {contact['phone']}")
-                st.write(f"{mail_icon} Email: {contact['email']}")
-                st.write("---")
-
-        elif selected_horizontal == "History":
-            if hasattr(st.session_state, 'is_authenticated') and st.session_state.is_authenticated:
-                user = db.get(st.session_state.username)
-                responses = user["responses"]
-
-                for response in responses[::-1]:
-                    print(response)
-                    st.subheader(response["query"])
-                    st.write(response["response"])
-                    st.divider()
-            else:
-                st.write("Please Login.")
