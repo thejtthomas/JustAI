@@ -30,7 +30,7 @@ Generate and review legal documents efficiently with our AI-driven document assi
 
 Check out our webapp here
 
-[JUST AI](justai.streamlit.app)
+[JUST AI](https://justai.streamlit.app/)
 
 ## Team members
 1. [Samyuktha Sudheer](https://github.com/samyukthacodes)
